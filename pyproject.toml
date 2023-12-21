@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "stepup-setup-jw"
+version = "0.1.0"
+description = "This repo holds example code to check the timing between devices recorded in LSL"
+authors = ["JuliusWelzel <julius.welzel@gmail.com>"]
+license = "GNU"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pylsl = "^1.16.2"
+pyxdf = "^1.16.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
