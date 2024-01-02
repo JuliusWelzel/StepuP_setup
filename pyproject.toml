@@ -10,6 +10,10 @@ readme = "README.md"
 python = "^3.10"
 pylsl = "^1.16.2"
 pyxdf = "^1.16.4"
+biosiglive = "^2.0.3"
+ipykernel = "^6.28.0"
+pyqtgraph = "^0.13.3"
+pyqt6 = "^6.6.1"
 
 
 [build-system]
