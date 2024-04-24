@@ -1,2 +1,5 @@
 *.lock
 *.xdf
+*__pychache__*
+/sync_scripts/__pycache__/pytrigno.cpython-310.pyc
+/.gitignore
