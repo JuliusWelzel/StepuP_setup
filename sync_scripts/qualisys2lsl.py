@@ -1,7 +1,6 @@
 """
     Minimal usage example
     Connects to QTM and streams 3D data forever
-    (start QTM first, load file, Play->Play with Real-Time output)
 """
 
 import pylsl
@@ -10,30 +9,57 @@ import qtm_rt
 import time
 
 def create_lsl_outlet():
-    """ Create a LSL outlet """
+    """
+    Creates and returns an LSL (Lab Streaming Layer) outlet for Qualisys data.
+
+    Returns:
+        pylsl.StreamOutlet: The LSL outlet object.
+
+    Raises:
+        None
+    """
     info = pylsl.StreamInfo(
         name="Qualisys",
         type="6D",
         channel_count=3,
         nominal_srate=100,
-        channel_format=pylsl.cf_float32,
+        channel_format=pylsl.cf_float32, # make sure to define the correct data type you get from the SDK
         source_id="qtm_6d",
     )
     outlet = pylsl.StreamOutlet(info)
     return outlet
 
 def on_packet(packet):
-    """ Callback function that is called everytime a data packet arrives from QTM """
-    #print("Framenumber: {}".format(packet.framenumber))
+    """
+    Process a packet received from the Qualisys system.
+    Each iteration of this function will push a sample to the LSL outlet.
+    All markers are pushed as a single sample.
+
+    Args:
+        packet: The packet received from the Qualisys system.
+
+    Returns:
+        None
+
+    Raises:
+        None
+    """
     header, markers = packet.get_3d_markers_no_label()
     for marker in markers:
-        outlet.push_sample(list(marker[0:3]))
+        outlet.push_sample(list(marker[0:4])) # this corresponds to the x, y, z, and marker id
         print(marker)
-        time.sleep(1)
-
 
 async def setup():
-    """ Main function """
+    """
+    Connects to the Qualisys system and sets up an LSL outlet for streaming frames.
+    Only streams marker data which is not automatically labeled by the Qualisys system.
+
+    Returns:
+        None
+
+    Raises:
+        None
+    """
     connection = await qtm_rt.connect("127.0.0.1")
     if connection is None:
         return
