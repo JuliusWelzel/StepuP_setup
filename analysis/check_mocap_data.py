@@ -1,11 +1,12 @@
-import pyxdf
 import matplotlib.pyplot as plt
 import numpy as np
+import pyxdf
+from sklearn.cluster import KMeans
 
-N_MARKERS = 15
+N_MARKERS = 10
 
 # Load in the data
-data, header = pyxdf.load_xdf('./data/test-walking_witherror.xdf', )
+data, header = pyxdf.load_xdf(r'C:\Users\User\Desktop\kiel\stepup_setup_jw\data\test-walking_witherror.xdf', )
 
 nms_streams = [stream["info"]["name"][0] for stream in data]
 
@@ -24,14 +25,38 @@ plt.bar(unique_marker_ids, counts)
 # extract the columns 1-3 for each of the top 5 marker ids and store them each in a separate array in a dict
 marker_data = {}
 for marker_id in top_5_marker_ids:
-    marker_data[int(marker_id)] = {
+    marker_data[marker_id] = {
         'data': emg_raw[emg_raw[:, -1] == marker_id, 0:3],
         'time_stamps': emg_times[emg_raw[:, -1] == marker_id]
     }
 
-# plot the data
+
+# cluster markers based on their position for seconds 5-10 based on their position with a target of N clusters
+# use kmeans clustering
+
+# get the data for the markers for the time period 5-10 from the dict time_stamps
+time_period = [5, 10]
+time_period_data = {}
+for marker_id in top_5_marker_ids:
+    time_period_data[marker_id] = {
+        'data': marker_data[marker_id]['data'][
+            (marker_data[marker_id]['time_stamps'] >= time_period[0]) & (marker_data[marker_id]['time_stamps'] <= time_period[1])],
+        }
+    
+# run kmeans clustering
+N_CLUSTERS = 5
+kmeans = KMeans(n_clusters=N_CLUSTERS)
+clustered_data = {}
+for marker_id in top_5_marker_ids:
+    kmeans.fit(time_period_data[marker_id]['data'])
+    clustered_data[marker_id] = {
+        'data': time_period_data[marker_id]['data'],
+        'cluster_labels': kmeans.labels_
+    }
+
+# plot the clustered data
 fig, ax = plt.subplots(N_MARKERS, 1, figsize=(10, 10), sharex=True)
 for i, marker_id in enumerate(top_5_marker_ids):
-    ax[i].plot(marker_data[marker_id]['time_stamps'], marker_data[marker_id]['data'])
+    for cluster in range(N_CLUSTERS):
+        ax[i].plot(clustered_data[marker_id]['data'][clustered_data[marker_id]['cluster_labels'] == cluster].T)
     ax[i].set_title(f"Marker {marker_id}")
-
