@@ -185,7 +185,7 @@ class TrignoEMG(_BaseTrignoDaq):
         self.channel_range = channel_range
         self.samples_per_read = samples_per_read
 
-        self.rate = 2000
+        self.rate = 2148
 
         self.scaler = 1.
         if units == 'mV':
