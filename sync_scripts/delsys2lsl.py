@@ -1,10 +1,6 @@
 from sync_scripts.pytrigno import TrignoEMG
 import matplotlib.pyplot as plt
 import pylsl as lsl
-import numpy as np
-import pyxdf
-import socket
-
 
 srate_emg = 2148 # sampling rate of the EMG sensors, can be edited at the base station
 s_buffer = 1 # seconds to buffer and send to LSL
