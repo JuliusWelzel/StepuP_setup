@@ -9,10 +9,11 @@ parser.add_argument('host', nargs='?', help="Host name, in the format of server:
 args = parser.parse_args()
 
 client = ViconDataStream.Client()
-
+print('Client created')
 
 try:
     client.Connect('192.168.10.1:801')
+    print('Client connected')
     # Check the version
     print( 'Version', client.GetVersion() )
 
@@ -29,8 +30,9 @@ try:
     # Report whether the data types have been enabled
     assert client.IsUnlabeledMarkerDataEnabled(), 'Unlabeled Marker Data Not Enabled, please check your setup'
 
-
+    print('Preparing to create LSL')
     # prepare lsl stream
+    client.GetFrame()
     srate = client.GetFrameRate() 
     n_channels = 4 # this should corresüond to x,y,z position and the marker id
     info = lsl.StreamInfo(
@@ -43,13 +45,23 @@ try:
     outlet = lsl.StreamOutlet(info)
     print('LSL Stream created')
 
-    HasFrame = False
-    timeout = 50
-    while not HasFrame:
+    HasFrame = True
+    timeout = 1200
+    while HasFrame:
         print( '.' )
         try:
             if client.GetFrame():
                 HasFrame = True
+                unlabeledMarkers = client.GetUnlabeledMarkers()
+                for markerPos, trajID in unlabeledMarkers:
+                    print( 'Unlabeled Marker at', markerPos, 'with trajID', trajID )
+                    outlet.push_sample([*markerPos, trajID])
+
+                labeledMarkers = client.GetLabeledMarkers()
+                for markerPos, trajID in labeledMarkers:
+                    print( 'Labeled Marker at', markerPos, 'with trajID', trajID )
+                    outlet.push_sample([*markerPos, trajID])
+
             timeout=timeout-1
             if timeout < 0:
                 print('Failed to get frame')
