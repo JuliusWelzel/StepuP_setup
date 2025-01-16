@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyxdf
 
-file_path = r"C:\Users\User\Desktop\kiel\stepup\stepup_setup_jw\data\sub-1_ses-1_task-FixedSpeed_eeg.xdf"  # Replace with your XDF file path
+file_path = r"C:\Users\User\Desktop\kiel\stepup\stepup_setup_jw\data\text_mocap_bologna_160125.xdf"  # Replace with your XDF file path
 
 
 streams, fileheader = pyxdf.load_xdf(file_path)
@@ -24,7 +24,14 @@ mocap_raw = streams[0]['time_series']
 marker_ids = mocap_raw[:, 3]
 unique_marker_ids = set(marker_ids)
 
-# plot ssecond against time for each unique marker id
+# make the subplots each row
+fig, axs = plt.subplots(3, 1, sharex=True)
+for i in range(3):
+    axs[i].plot(mocap_times, mocap_raw[:, [x - 4 + i for x in [3, 6, 9, 12, 15]]])
+    axs[i].set_ylabel(f'Axis {i+1}')
+    axs[i].set_xlabel('Time (s)')
+
+# plot second against time for each unique marker id
 dict_raw = {}
 fig, ax = plt.subplots(1, 1)
 for marker_id in unique_marker_ids:
