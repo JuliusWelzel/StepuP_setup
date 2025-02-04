@@ -4,8 +4,9 @@
 /sync_scripts/__pycache__/pytrigno.cpython-310.pyc
 /.gitignore
 
-sync_scripts/DelsysAPI.dll
+sync_scripts/LSLDelsysGUI/DelsysAPI.dll
 
 # data
 *.xdf
 *.mat
+*.pyc
