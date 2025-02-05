@@ -1,123 +1,97 @@
+# Version 22-01-2025
+
+'''
+To run the entire script it must be in the same folder where the SDK is saved.
+'''
+
 import clr
 import os
-import sys
 
-#####
-# Get system setup
-#####
-
-python_dll_path = r"C:\franc\anaconda3\python39.dll"  # Modify this path according to your Python installation
+python_dll_path = r"C:\franc\anaconda3\python39.dll"   # Modify this path
 os.environ["PYTHONNET_PYDLL"] = python_dll_path
 
-sys.path.append(r"C:\Users\franc\Documents\IRCCS-ISNB\StepuP\Instrumentation\SDK\WaveX SDK")
-a = clr.AddReference("WaveX")
-
-path = r"C:\Users\franc\Documents\IRCCS-ISNB\StepuP\Instrumentation\SDK\WaveX SDK\WaveX.dll"
-if os.path.exists(path):
-    print(f"The DLL file was found at: {path}")
-else:
-    print(f"Error: The DLL file was not found at: {path}")
-
-
-#####
-# load the DLL
-#####
+import os
+path = r"C:\Users\franc\Documents\IRCCS-ISNB\StepuP\Instrumentation\SDK\WaveX SDK\WaveX.dll" # Modify this path
+print(os.path.exists(path))  # it should return 1
 
 from System.Reflection import Assembly
+# load the DLL
 assembly = Assembly.LoadFile(path)
 
-# Print available type names
+# print the class available
 for type in assembly.GetTypes():
-    print(type.FullName)
-    
+    print(type.FullName)   
+
 from System import AppDomain
-# Show all classes in the WaveX module
+# Classes available in module WaveX
 waveXAssembly = AppDomain.CurrentDomain.Load("WaveX")
 for type in waveXAssembly.GetTypes():
     print(type.FullName)
 
-daq_system_type = assembly.GetType('WaveX.DaqSystem')
-
-if daq_system_type and daq_system_type.IsClass:
-    # Use Activator to create an instance
-    daq_system = Activator.CreateInstance(daq_system_type)
-    print("DaqSystem initialized successfully.")
-else:
-    print("DaqSystem not found or is not a class in the loaded assembly.")
-
-# from load LSL relevant packages
+# from WaveX import DaqSystem
+from WaveX import *
 import matplotlib.pyplot as plt
 import pylsl as lsl
 import numpy as np
-
-# setup CONSTNATS for LSL
-SRATE_EMG = 2000 # sampling rate of the EMG sensors, can be edited at the base station
-BUFFER_LENGTH_SEC = 1 # seconds to buffer and send to LSL
-N_CHANS_EMG = 8 # number of channels, 6 is minimum for Stepup
-SAMPLES_PER_READ = int(SRATE_EMG * BUFFER_LENGTH_SEC)
-
-# create lsl outlet
-info = lsl.StreamInfo('Cometa', 'EMG', N_CHANS_EMG,  SRATE_EMG, 'float32', 'myuid34234')
-outlet = lsl.StreamOutlet(info, chunk_size=SAMPLES_PER_READ, max_buffered=120) 
-
-
-# Connect and configure the sensors    
+import pyxdf
+import socket
 from WaveX.Common.Definitions import EmgAcqXType
 from WaveX.Common.Definitions import DataAvailableEventPeriod
-from WaveX.Common.Definitions import DataAvailableEventArgs
+
+srate_emg = 2000 # sampling rate of the EMG sensors, can be edited at the base station
+s_buffer = 0.1 # seconds to buffer and send to LSL
+chunk_size = 36 # number of channels, 6 is minimum for Stepup
+samples_per_read = int(srate_emg * s_buffer)
+
+# create lsl outlet
+info = lsl.StreamInfo('Cometa', 'EMG', chunk_size,  srate_emg, 'float32', 'myuid34234')
+#outlet = lsl.StreamOutlet(info, chunk_size=samples_per_read, max_buffered=120) 
+outlet = lsl.StreamOutlet(info)
+
+# Initialize the Cometa Sensor using DaqSystem
+daq_system = DaqSystem()
 
 sensors = daq_system.InstalledSensors
-print(f"Number of connected sensors: {sensors}")
+print(f"N. of connected sensors: {sensors}")
 
-#Configure the sensors
+# Configure the sensors
 capture_config = daq_system.CaptureConfiguration()
-
-capture_config.EMG_AcqXType = EmgAcqXType.Emg_2kHz # set sampling rate to 2 kHz
-
+capture_config.EMG_AcqXType = EmgAcqXType.Emg_2kHz
 daq_system.ConfigureCapture(capture_config)
 daq_system.EnableSensor(0) # Enable all sensors 
 
-data_counter = 0
+def on_data_available(sender, e):
+    global emg_data, emg_data_np, srate
+     
+    emg_data = e.EmgSamples
+    emg_data_np = np.array(emg_data)
+    
+    outlet.push_chunk(emg_data_np.T.tolist())  # data are transposed
+    
+    print("Sending data to LSL")
+    
+# Start capturing data
+daq_system.StartCapturing(DataAvailableEventPeriod.ms_10)
+print('Streaming data…')
 
-def stateChangedHandler(source, args):
-    # This function handles the StateChanged events
-    #print("\r\nStateChanged event handler called")
-    printSystemState(daq_system)
-    print('from state change handler')
+daq_system.DataAvailable += on_data_available
+# Associates the on_data_available function as a handler for the DataAvailable event
+# When the system (daq_system) detects that there is data available from EMG sensors, the 
+# DataAvailable event is automatically triggered, and the on_data_available function is called
 
-def dataAvailableHandler(source, args: DataAvailableEventArgs):
-    global data_counter
-    # Print the number of samples received
-    print("Number of samples is: ", args.ScanNumber)
+# When the data is available, the system generates the DataAvailable event; 
+# the on_data_available function is automatically called and handles sensing the data to LSL
 
-    # Convert the samples to a NumPy array for all channels
-    emg_data_np = np.array(args.EmgSamples)  # Get all samples for streaming
-
-    # print type of args.EmgSamples
-    # Print the type and shape of the EMG samples for debugging
-    print(f"Type of EMG samples: {type(args.EmgSamples)}")
-    print(f"Shape of EMG samples: {np.shape(args.EmgSamples)}")
-    data_counter += 1
-
-    # Push the entire dataset to the LSL outlet
-    outlet.push_chunk(emg_data_np.T)  # Transpose if needed for LSL format
-
-# Subscription to the event
-daq_system.DataAvailable += dataAvailableHandler
-#daq_system.StateChanged += stateChangedHandler
-
-print('Start Streaming...')
-daq_system.StartCapturing(DataAvailableEventPeriod.ms_100)
-
-#daq_system.StopCapturing()
-#print(dir(DataAvailableEventPeriod))
+try:
+    while True:
+        pass  
+except KeyboardInterrupt:
+    print("\nManual interruption received. Stopping streaming...")
+finally:
+    # Stop capturing data
+    daq_system.StopCapturing()
+    print('Streaming stopped')
 
 
-# test using random data
-'''
-import time
-while True:
-    emg_data = np.random.randn(8).tolist()  # Generate random data (8 channels)
-    outlet.push_sample(emg_data)            # Push each sample to LSL
-    time.sleep(0.0005)  # Sleep for 0.5 ms (simulates 2000 Hz sampling rate)
-'''
+
+ 
