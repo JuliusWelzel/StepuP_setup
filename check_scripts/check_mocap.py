@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyxdf
 
-file_path = r"C:\Users\User\Desktop\delsys_test.xdf"  # Replace with your XDF file path
+file_path = r"C:\Users\User\Desktop\kiel\stepup\stepup_setup_jw\data\text_vicon_telaviv_080125.xdf"  # Replace with your XDF file path
 
 
 streams, fileheader = pyxdf.load_xdf(file_path)
@@ -44,3 +44,5 @@ ax.legend([f'Marker {int(marker_id)}' for marker_id in unique_marker_ids])
 
 # add y label
 ax.set_ylabel('Z position (?)')
+ax.set_xlabel('Time (s)')
+ax.set_xlim([10, 10.3])
