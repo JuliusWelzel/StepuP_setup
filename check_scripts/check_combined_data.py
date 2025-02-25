@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyxdf
 
-file_path = r"C:\Users\User\Desktop\kiel\stepup\stepup_setup_jw\data\test_AllDevices_telaviv_19025.xdf"  # Replace with your XDF file path
+file_path = r"C:\Users\User\Desktop\kiel\stepup\stepup_setup_jw\data\test_all_telaviv_250225.xdf"  # Replace with your XDF file path
 
 
 streams, fileheader = pyxdf.load_xdf(file_path)
@@ -46,19 +46,20 @@ for marker_id in unique_marker_ids:
         marker_ids = np.delete(marker_ids, idx)
         
 # extract only marker 503
-idx_34 = np.where(mocap_raw[:,3] == 34)
-idx_294 = np.where(mocap_raw[:,3] == 294)
-idx_296 = np.where(mocap_raw[:,3] == 296)
+idx_34 = np.where(mocap_raw[:,3] == 7)
+idx_294 = np.where(mocap_raw[:,3] == 9)
+idx_296 = np.where(mocap_raw[:,3] == 44)
 marker_34 = mocap_raw[idx_34][:,0:3]
 marker_294 = mocap_raw[idx_294][:,0:3]
 marker_296 = mocap_raw[idx_296][:,0:3]
 
 # make 3 subplots
-fig, axs = plt.subplots(3, 1, sharex=True)
+fig, axs = plt.subplots(2, 1, sharex=True)
 # plot 1 emg
 axs[0].plot(emg_times, emg_raw) 
 axs[0].set_ylabel('EMG')
-axs[0].legend(['RfEmgR', 'BfEmgR', 'RfEmgL', 'BfEmgL'])
+axs[0].set_ylim([-.7,.5])
+#axs[0].legend(['RfEmgR', 'BfEmgR', 'RfEmgL', 'BfEmgL'])
 
 # plot 2 mocap
 axs[1].plot(mocap_times[idx_34], marker_34[:,2])
@@ -66,11 +67,11 @@ axs[1].plot(mocap_times[idx_294], marker_294[:,2])
 axs[1].plot(mocap_times[idx_296], marker_296[:,2])
 axs[1].set_xlabel('Time (s)')
 axs[1].set_ylabel('Z position (?)')
-axs[1].legend(['Marker 34', 'Marker 294', 'Marker 296'])
+#axs[1].legend(['Marker 34', 'Marker 294', 'Marker 296'])
 
 # set xlim 20-30s for all subplots
 for ax in axs:
-    ax.set_xlim([20, 30])
+    ax.set_xlim([100,110])
     
 # plot 3 eeg
 axs[2].plot(eeg_stream['time_stamps'], eeg_stream['time_series'])
