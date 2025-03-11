@@ -10,3 +10,4 @@ sync_scripts/LSLDelsysGUI/DelsysAPI.dll
 *.xdf
 *.mat
 *.pyc
+*.csv

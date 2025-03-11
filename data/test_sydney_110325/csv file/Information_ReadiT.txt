@@ -1,0 +1,10 @@
+<Column A>Timestamps
+<Colum B(0)>FrameNumbers
+<Colum (1)C>Frame rate
+<Colum D(2)>Total Time(It's just for our own understating, don't worry about it)
+<Colum E(3)-CF(82)>Vicon Data<Colum BM(63)-BT(70)>Left Foot and Right Foot Extra Markers<Colum BU(71)-CF(82)>Unlabelled Markers>
+<Colum CG(83)-AAV(722)EMG Data>We used only two sensors, that 'why all other columns are zero
+<Colum AAW(723)-AHV(904)>Force Plates Data
+
+
+@Information about the TrajID of every sensor/marker is attached herewith in a picture. 
