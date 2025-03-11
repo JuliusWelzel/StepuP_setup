@@ -6,7 +6,8 @@ import pyxdf
 from pathlib import Path
 
 
-fname = Path("C:/Users/juliu/Desktop/kiel/stepup_setup_jw/data/test_telaviv_050325/TreadmillTrial1.xdf")
+
+fname = r"C:\Users\juliu\Desktop\kiel\stepup_setup_jw\data\test_sydney_110325\MaynaTestWalk01.xdf"  # Replace with your XDF file path
 streams, header = pyxdf.load_xdf(fname)
 
 eeg_stream = [s for s in streams if s['info']['type'][0] == 'EEG'][0]
@@ -14,9 +15,16 @@ eeg_stream = [s for s in streams if s['info']['type'][0] == 'EEG'][0]
 data = eeg_stream["time_series"].T
 sfreq = float(eeg_stream["info"]["nominal_srate"][0])
 montage = mne.channels.make_standard_montage("standard_1020")
-ch_names = montage.ch_names[:64]
-info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types="eeg")
+channels = eeg_stream["info"]["desc"][0]["channels"][0]["channel"]
+ch_names = [channel["label"][0] for channel in channels]
+ch_types = [channel["type"][0] for channel in channels]
+# change all labels to misc when not EEG
+ch_types = ["eeg" if ch_type == "EEG" else "misc" for ch_type in ch_types]
+info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types=ch_types)
 raw = mne.io.RawArray(data, info)
+
+# pick only eeg channels
+raw.pick_types(eeg=True)
 
 print(f"Computing electrode bridges")
 ed_data = mne.preprocessing.compute_bridged_electrodes(raw)
@@ -51,10 +59,19 @@ for ax in (ax1, ax2):
 fig, ax = plt.subplots()
 raw.plot_psd(ax=ax, fmax=100, show=False)
 ax.set_title("PSD of all channels")
+ax.set_ylim([80, 180])
 plt.show()
 
-# plot first 20sec of time series of channel Cz
-fig, ax = plt.subplots()
-raw.plot(scalings=dict(eeg=100e-6), duration=1, start=14, n_channels=1)
+# plot one random channel and one with lowest mean
+fig, axs = plt.subplots(2, 1, sharex=True)
+raw.plot( picks=[0], show=False)
+raw.plot( picks=[np.argmin(np.mean(raw._data, axis=1))], show=False)
+axs[0].set_title("PSD of random channel")
+axs[1].set_title("PSD of channel with lowest mean")
 
-plt.plot(eeg_stream["time_series"].T[0,:][240:260])
+# plot tf of all channels
+fig, ax = plt.subplots()
+raw.plot(duration=10, n_channels=10, scalings="auto", picks=[0], show=False)
+raw.plot(duration=10, n_channels=10, scalings="auto", picks=[np.argmin(np.mean(raw._data, axis=1))], show=False)
+ax.set_title("Time-frequency of all channels")
+plt.show()
