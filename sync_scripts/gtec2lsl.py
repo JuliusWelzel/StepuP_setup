@@ -59,19 +59,12 @@ class LabRecorder:
             except Exception as e:
                 print(f"Failed to send command: {e}")
 
-    def start_recording(self, root, template, run, participant, task):
+    def start_recording(self):
         """
         Starts recording data with the specified parameters.
-        Args:
-            root (str): The root directory for the recording files.
-            template (str): The template for the recording files.
-            run (str): The run identifier.
-            participant (str): The participant identifier.
-            task (str): The task identifier.
+
         """
         self.send_command("select all")
-        filename_command = f"filename {{root:{root}}} {{template:{template}}} {{run:{run}}} {{participant:{participant}}} {{task:{task}}}"
-        self.send_command(filename_command)
         self.send_command("start")
 
     def stop_recording(self):
@@ -89,6 +82,8 @@ class LabRecorder:
             print("Disconnected from LabRecorder")
 
 
+# print initial message
+print("Initialising GDS device...")
 
 # initalise the gtec device
 eeg = pygds.GDS()
@@ -100,8 +95,8 @@ samples_per_read = int(srate * s_buffer)
 
 # get impedance values and print
 impedances = eeg.GetImpedanceEx()
-print(impedances)
 
+print("Initialising LSL outlet...")
 # initiate LSL outlet
 info = lsl.StreamInfo('GTec', 'EEG', n_chns_eeg , srate, 'float32', 'myuid34234')
 outlet = lsl.StreamOutlet(info, chunk_size=samples_per_read, max_buffered=120)
@@ -112,36 +107,39 @@ lab_recorder = LabRecorder()
 # Connect to LabRecorder
 lab_recorder.connect()
 
-# Start recording, specify path and file name template
-lab_recorder.start_recording(
-    root="C:\\Data\\", #update the path to the desired location
-    template="exp%n\\%p_task_%b.xdf",# update the file name template
-    participant="P003", # participant ID
-    task="CS" # task name one of CS (comfortable speed), FS (fixed speed), FAM (Famlilirazation)
-)
-
 # Wait for user input to start data acquisition
 input("Press Enter to start data acquisition...")
 
-# Record the start time
-start_time = time.time()
+# Start recording, specify path and file name template
+lab_recorder.start_recording()
+
+# store lsl start time
+start_time = lsl.local_clock()
 
 # Wait for user input to get and push data
-input("Press Enter to finish recording and push data...")
+input("Press Enter to finalize recording and push data...")
 
 # Record the end time
 end_time = time.time()
 
 # Calculate the number of samples to read based on the elapsed time
-elapsed_time = end_time - start_time
+elapsed_time = lsl.local_clock() - start_time
 samples_per_read = int(srate * elapsed_time)
 
 # Get and push data
 data = eeg.GetData(samples_per_read) # read data from the base station
-outlet.push_chunk(data) # push the data to the LSL outlet
+
+# print if data has been sucessfully read from device
+if data is not None:
+    print(f"Data read successfully: {data.shape}")
+
+outlet.push_chunk(data, timestamp=start_time) # push the data to the LSL outlet
+
+# print if data has been sucessfully pushed to LSL
+print(f"Data pushed to LSL")
 
 # Wait for user input to end recording
-input("Press Enter to stop recording...")
+input("Press Enter to stop recording and close LSL...")
 
 # Stop recording after user input
 lab_recorder.stop_recording()
