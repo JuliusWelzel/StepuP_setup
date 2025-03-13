@@ -2,8 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyxdf
 
-file_path = r"C:\Users\juliu\Desktop\kiel\stepup_setup_jw\data\test_sydney_110325\MaynaTestWalk01.xdf"  # Replace with your XDF file path
-
+file_path = r"C:\Users\User\Desktop\kiel\stepup\stepup_setup_jw\data\test_sydney_110325\MaynaTestWalk01.xdf"  # Replace with your XDF file path
 
 streams, fileheader = pyxdf.load_xdf(file_path)
 print("File loaded successfully.")
@@ -18,22 +17,22 @@ if streams is not None:
         print(f"Sample rate: {stream['info']['nominal_srate'][0]}")
         print(f"Data points: {len(stream['time_series'])}")
 
-# find EMG stream
-emg_stream = [s for s in streams if s['info']['type'][0] == 'EMG'][0]
 # find Mocap stream
 mocap_stream = [s for s in streams if s['info']['type'][0] == 'MoCap'][0]
 # find EEG stream
 eeg_stream = [s for s in streams if s['info']['type'][0] == 'EEG'][0]
+# find Marker stream
+marker_stream = [s for s in streams if s['info']['type'][0] == 'Markers'][0]
 
-# preparethe data
-emg_times = emg_stream['time_stamps'] - eeg_stream['time_stamps'][0]
-emg_raw = emg_stream['time_series']
-
+# preparethe dats
 mocap_times = mocap_stream['time_stamps'] - eeg_stream['time_stamps'][0]
 mocap_raw = mocap_stream['time_series']
 
 eeg_times = eeg_stream['time_stamps'] - eeg_stream['time_stamps'][0]
 eeg_raw = eeg_stream['time_series']
+
+# extract mocap marker data
+
 
 # print unique marker ids, and number of occurences per makrer id
 marker_ids = mocap_raw[0,:]
