@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyxdf
 
-file_path = r"C:\Users\juliu\Desktop\kiel\stepup_setup_jw\data\test_sydney_110325\MaynaTestWalk01.xdf"  # Replace with your XDF file path
+file_path = r"C:\Users\User\Desktop\kiel\stepup\stepup_setup_jw\data\test_telaviv_130325.xdf"  # Replace with your XDF file path
 
 
 streams, fileheader = pyxdf.load_xdf(file_path)
@@ -57,7 +57,6 @@ marker_294 = mocap_raw[idx_294][:,0:3]
 marker_296 = mocap_raw[idx_296][:,0:3]
 
 # make 3 subplots
-fig, axs = plt.subplots(3, 1, sharex=True)
 # plot 1 emg
 axs[0].plot(emg_times, emg_raw) 
 axs[0].set_ylabel('EMG')
@@ -81,3 +80,21 @@ axs[2].set_xlabel('Time (s)')
 # set xlim 20-30s for all subplots
 for ax in axs:
     ax.set_xlim([250, 255])
+
+# plot 3 eeg
+fig, axs = plt.subplots(2, 1)
+axs[0].plot(eeg_times, eeg_stream['time_series'][:,0])
+axs[0].set_ylabel('EEG')
+axs[0].set_xlabel('Time (s)')
+
+# plot 3 eeg
+axs[1].plot(eeg_times)
+axs[1].set_ylabel('Time')
+axs[1].set_xlabel('samples')
+axs[1].set_xlim([0, 1000])
+
+# print mean and variance of diff between time stamps from eeg
+mean_diff = np.mean(np.diff(eeg_times))
+var_diff = np.var(np.diff(eeg_times))
+print(f"Mean difference between EEG time stamps: {mean_diff}")
+print(f"Variance of difference between EEG time stamps: {var_diff}")
