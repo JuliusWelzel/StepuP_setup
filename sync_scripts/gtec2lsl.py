@@ -127,16 +127,22 @@ elapsed_time = lsl.local_clock() - start_time
 samples_per_read = int(srate * elapsed_time)
 
 # Get and push data
+start_read_time = lsl.local_clock()
 data = eeg.GetData(samples_per_read) # read data from the base station
+end_read_time = lsl.local_clock()
 
-# print if data has been sucessfully read from device
+# print if data has been successfully read from device
 if data is not None:
     print(f"Data read successfully: {data.shape}")
+    print(f"Time taken to read data: {end_read_time - start_read_time} seconds")
 
+start_push_time = lsl.local_clock()
 outlet.push_chunk(data, timestamp=start_time) # push the data to the LSL outlet
+end_push_time = lsl.local_clock()
 
-# print if data has been sucessfully pushed to LSL
+# print if data has been successfully pushed to LSL
 print(f"Data pushed to LSL")
+print(f"Time taken to push data: {end_push_time - start_push_time} seconds")
 
 # Wait for user input to end recording
 input("Press Enter to stop recording and close LSL...")
