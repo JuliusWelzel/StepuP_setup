@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyxdf
 
-file_path = r"C:\Users\User\Desktop\kiel\stepup\stepup_setup_jw\data\test_telaviv_130325.xdf"  # Replace with your XDF file path
+file_path = r"C:\Users\juliu\Desktop\kiel\stepup_setup_jw\data\test_telaviv_190325.xdf"  # Replace with your XDF file path
 
 
 streams, fileheader = pyxdf.load_xdf(file_path)
@@ -26,17 +26,17 @@ mocap_stream = [s for s in streams if s['info']['type'][0] == 'MoCap'][0]
 eeg_stream = [s for s in streams if s['info']['type'][0] == 'EEG'][0]
 
 # preparethe data
-emg_times = emg_stream['time_stamps'] - eeg_stream['time_stamps'][0]
+emg_times = emg_stream['time_stamps'] - emg_stream['time_stamps'][0]
 emg_raw = emg_stream['time_series']
 
-mocap_times = mocap_stream['time_stamps'] - eeg_stream['time_stamps'][0]
+mocap_times = mocap_stream['time_stamps'] - mocap_stream['time_stamps'][0]
 mocap_raw = mocap_stream['time_series']
 
 eeg_times = eeg_stream['time_stamps'] - eeg_stream['time_stamps'][0]
 eeg_raw = eeg_stream['time_series']
 
 # print unique marker ids, and number of occurences per makrer id
-marker_ids = mocap_raw[0,:]
+marker_ids = mocap_raw[:,3]
 unique_marker_ids = set(marker_ids)
 for marker_id in unique_marker_ids:
     print(f"Marker {int(marker_id)}: {np.sum(marker_ids == marker_id)}")
@@ -49,14 +49,15 @@ for marker_id in unique_marker_ids:
         marker_ids = np.delete(marker_ids, idx)
         
 # extract only marker 503
-idx_34 = np.where(mocap_raw[:,3] == 2)
-idx_294 = np.where(mocap_raw[:,3] == 3)
-idx_296 = np.where(mocap_raw[:,3] == 4)
+idx_34 = np.where(mocap_raw[:,3] == 600)
+idx_294 = np.where(mocap_raw[:,3] == 248)
+idx_296 = np.where(mocap_raw[:,3] == 220)
 marker_34 = mocap_raw[idx_34][:,0:3]
 marker_294 = mocap_raw[idx_294][:,0:3]
 marker_296 = mocap_raw[idx_296][:,0:3]
 
 # make 3 subplots
+fig, axs = plt.subplots(3, 1, sharex=True)
 # plot 1 emg
 axs[0].plot(emg_times, emg_raw) 
 axs[0].set_ylabel('EMG')
@@ -79,22 +80,22 @@ axs[2].set_xlabel('Time (s)')
 
 # set xlim 20-30s for all subplots
 for ax in axs:
-    ax.set_xlim([250, 255])
+    ax.set_xlim([25, 30])
 
-# plot 3 eeg
-fig, axs = plt.subplots(2, 1)
-axs[0].plot(eeg_times, eeg_stream['time_series'][:,0])
-axs[0].set_ylabel('EEG')
-axs[0].set_xlabel('Time (s)')
 
-# plot 3 eeg
-axs[1].plot(eeg_times)
-axs[1].set_ylabel('Time')
-axs[1].set_xlabel('samples')
-axs[1].set_xlim([0, 1000])
 
 # print mean and variance of diff between time stamps from eeg
 mean_diff = np.mean(np.diff(eeg_times))
 var_diff = np.var(np.diff(eeg_times))
 print(f"Mean difference between EEG time stamps: {mean_diff}")
 print(f"Variance of difference between EEG time stamps: {var_diff}")
+
+
+# plot emg, mocap and eeg timestamps as as thick lines
+fig, ax = plt.subplots()
+ax.plot(emg_stream['time_stamps'] , np.ones_like(emg_times), linewidth=5)
+ax.plot(mocap_stream['time_stamps'] , 2*np.ones_like(mocap_times), linewidth=5)
+ax.plot(eeg_stream['time_stamps'] , 3*np.ones_like(eeg_times), linewidth=5)
+ax.set_yticks([1,2,3])
+ax.set_yticklabels(['EMG', 'MoCap', 'EEG'])
+ax.set_xlabel('Time (s)')
