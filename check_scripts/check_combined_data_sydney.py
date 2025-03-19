@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyxdf
 
-file_path = r"C:\Users\juliu\Desktop\kiel\stepup_setup_jw\data\test_sydney_110325\MaynaTestWalk01.xdf"  # Replace with your XDF file path
+file_path = r"C:\Users\juliu\Desktop\kiel\stepup_setup_jw\data\test_sydney_060325\Walk_preferred_2.xdf"  # Replace with your XDF file path
 
 streams, fileheader = pyxdf.load_xdf(file_path)
 print("File loaded successfully.")
@@ -44,9 +44,14 @@ eeg_raw = eeg_stream['time_series']
 mocap_times = mocap_raw[:,0]
 frames_mocap = mocap_raw[:,1]
 vicon_data = mocap_raw[:,3:83]
-lf_z_vicon = mocap_raw[:,65]
 emg_data = mocap_raw[:,83:723]
+
+# extract specific columns
 some_emg = emg_data[:,0]
+# find column with contains all number 12.0 from vicon data
+# Find rows in vicon_data where all elements are 12.0
+idx_12 = np.argmax(np.sum(vicon_data == 12.0, axis=0))
+lf_z_vicon = vicon_data[:,idx_12 + 3]
 
 # make 3 subplots
 fig, axs = plt.subplots(3, 1, sharex=True)
@@ -60,7 +65,7 @@ axs[0].set_ylabel('EMG')
 #axs[1].plot(mocap_times[idx_34], marker_34[:,2])
 axs[1].plot(mocap_times, lf_z_vicon)
 axs[1].set_xlabel('Time (s)')
-axs[1].set_ylabel('Z position (?)')
+axs[1].set_ylabel('Z position (LF)')
 #axs[1].legend(['Marker 34', 'Marker 294', 'Marker 296'])
 
     
@@ -68,8 +73,34 @@ axs[1].set_ylabel('Z position (?)')
 axs[2].plot(eeg_times, eeg_stream['time_series'][:,0])
 axs[2].set_ylabel('EEG')
 axs[2].set_xlabel('Time (s)')
-axs[2].set_ylim([-100, 100])
+#axs[2].set_ylim([-100, 100])
 
 # set xlim 20-30s for all subplots
 for ax in axs:
-    ax.set_xlim([10, 25])
+    ax.set_xlim([20, 28])
+
+# make 3 subplots
+fig, axs = plt.subplots(3, 1, sharex=True)
+# plot 1 emg
+axs[0].plot(mocap_times, some_emg) 
+axs[0].set_ylabel('EMG')
+#axs[0].set_ylim([-.7,.5])
+#axs[0].legend(['RfEmgR', 'BfEmgR', 'RfEmgL', 'BfEmgL'])
+
+# plot 2 mocap
+#axs[1].plot(mocap_times[idx_34], marker_34[:,2])
+axs[1].plot(mocap_times, lf_z_vicon)
+axs[1].set_xlabel('Time (s)')
+axs[1].set_ylabel('Z position (LF)')
+#axs[1].legend(['Marker 34', 'Marker 294', 'Marker 296'])
+
+    
+# plot 3 eeg
+axs[2].plot(eeg_times, eeg_stream['time_series'][:,0])
+axs[2].set_ylabel('EEG')
+axs[2].set_xlabel('Time (s)')
+#axs[2].set_ylim([-100, 100])
+
+# set xlim 20-30s for all subplots
+for ax in axs:
+    ax.set_xlim([190, 198])
