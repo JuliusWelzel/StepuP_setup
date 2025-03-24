@@ -152,5 +152,3 @@ lab_recorder.stop_recording()
 lab_recorder.disconnect()
 
 eeg.Close()
-
-
