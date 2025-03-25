@@ -120,7 +120,7 @@ start_time = lsl.local_clock()
 input("Press Enter to finalize recording and push data...")
 
 # Record the end time
-end_time = time.time()
+end_time = lsl.local_clock()
 
 # Calculate the number of samples to read based on the elapsed time
 elapsed_time = lsl.local_clock() - start_time
@@ -137,7 +137,7 @@ if data is not None:
     print(f"Time taken to read data: {end_read_time - start_read_time} seconds")
 
 start_push_time = lsl.local_clock()
-outlet.push_chunk(data, timestamp=start_time) # push the data to the LSL outlet
+outlet.push_chunk(data, timestamp=start_read_time) # push the data to the LSL outlet
 end_push_time = lsl.local_clock()
 
 # print if data has been successfully pushed to LSL
