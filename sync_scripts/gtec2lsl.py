@@ -149,6 +149,9 @@ input("Press Enter to stop recording and close LSL...")
 
 # Stop recording after user input
 lab_recorder.stop_recording()
+
+# pause for 1 second
+time.sleep(1)
 lab_recorder.disconnect()
 
 eeg.Close()
