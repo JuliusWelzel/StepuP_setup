@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyxdf
 
-file_path = r"C:\Users\juliu\Desktop\kiel\stepup_setup_jw\data\test_telaviv_190325.xdf"  # Replace with your XDF file path
+file_path = r"C:\Users\User\Desktop\kiel\stepup\stepup_setup_jw\data\EEG_EMG_Fix.xdf"  # Replace with your XDF file path
 
 
 streams, fileheader = pyxdf.load_xdf(file_path)
@@ -48,13 +48,28 @@ for marker_id in unique_marker_ids:
         mocap_raw = np.delete(mocap_raw, idx, axis=0)
         marker_ids = np.delete(marker_ids, idx)
         
-# extract only marker 503
-idx_34 = np.where(mocap_raw[:,3] == 600)
-idx_294 = np.where(mocap_raw[:,3] == 248)
-idx_296 = np.where(mocap_raw[:,3] == 220)
-marker_34 = mocap_raw[idx_34][:,0:3]
-marker_294 = mocap_raw[idx_294][:,0:3]
-marker_296 = mocap_raw[idx_296][:,0:3]
+# Count occurrences of each marker ID
+marker_ids = mocap_raw[:, 3]
+unique_marker_ids, counts = np.unique(marker_ids, return_counts=True)
+
+# Get the 5 most common markers
+most_common_markers = sorted(zip(unique_marker_ids, counts), key=lambda x: x[1], reverse=True)[:5]
+
+# Store the data and indices for the 5 most common markers in a dictionary
+marker_data_dict = {}
+for marker_id, count in most_common_markers:
+    indices = np.where(marker_ids == marker_id)
+    marker_data = mocap_raw[indices]
+    marker_data_dict[int(marker_id)] = {
+        "data": marker_data,
+        "indices": indices
+    }
+
+# Print the dictionary for verification
+for marker_id, info in marker_data_dict.items():
+    print(f"Marker {marker_id}:")
+    print(f"  Count: {len(info['data'])}")
+    print(f"  Indices: {info['indices']}")
 
 # make 3 subplots
 fig, axs = plt.subplots(3, 1, sharex=True)
@@ -65,9 +80,11 @@ axs[0].set_ylim([-.7,.5])
 #axs[0].legend(['RfEmgR', 'BfEmgR', 'RfEmgL', 'BfEmgL'])
 
 # plot 2 mocap
-#axs[1].plot(mocap_times[idx_34], marker_34[:,2])
-axs[1].plot(mocap_times[idx_294], marker_294[:,2])
-axs[1].plot(mocap_times[idx_296], marker_296[:,2])
+for marker_id, info in marker_data_dict.items():
+    marker_times = mocap_times[info['indices']]
+    marker_positions = info['data'][:, 2]  # 3rd column (Z position)
+    axs[1].plot(marker_times, marker_positions, label=f'Marker {marker_id}')
+axs[1].legend()
 axs[1].set_xlabel('Time (s)')
 axs[1].set_ylabel('Z position (?)')
 #axs[1].legend(['Marker 34', 'Marker 294', 'Marker 296'])
@@ -94,8 +111,11 @@ print(f"Variance of difference between EEG time stamps: {var_diff}")
 # plot emg, mocap and eeg timestamps as as thick lines
 fig, ax = plt.subplots()
 ax.plot(emg_stream['time_stamps'] , np.ones_like(emg_times), linewidth=5)
-ax.plot(mocap_stream['time_stamps'] , 2*np.ones_like(mocap_times), linewidth=5)
+#ax.plot(mocap_stream['time_stamps'] , 2*np.ones_like(mocap_times), linewidth=5)
 ax.plot(eeg_stream['time_stamps'] , 3*np.ones_like(eeg_times), linewidth=5)
 ax.set_yticks([1,2,3])
 ax.set_yticklabels(['EMG', 'MoCap', 'EEG'])
 ax.set_xlabel('Time (s)')
+
+# print the time diff between eeg and emg
+print(f"Time difference between EEG and EMG: {emg_stream['time_stamps'] [0] - eeg_stream['time_stamps'] [0]}")
