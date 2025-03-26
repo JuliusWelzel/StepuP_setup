@@ -70,6 +70,7 @@ for marker_id, info in marker_data_dict.items():
     print(f"Marker {marker_id}:")
     print(f"  Count: {len(info['data'])}")
     print(f"  Indices: {info['indices']}")
+print(f"  A total of {len(unique_marker_ids)} markers is found, where .")
 
 # make 3 subplots
 fig, axs = plt.subplots(3, 1, sharex=True)
@@ -98,24 +99,3 @@ axs[2].set_xlabel('Time (s)')
 # set xlim 20-30s for all subplots
 for ax in axs:
     ax.set_xlim([25, 30])
-
-
-
-# print mean and variance of diff between time stamps from eeg
-mean_diff = np.mean(np.diff(eeg_times))
-var_diff = np.var(np.diff(eeg_times))
-print(f"Mean difference between EEG time stamps: {mean_diff}")
-print(f"Variance of difference between EEG time stamps: {var_diff}")
-
-
-# plot emg, mocap and eeg timestamps as as thick lines
-fig, ax = plt.subplots()
-ax.plot(emg_stream['time_stamps'] , np.ones_like(emg_times), linewidth=5)
-#ax.plot(mocap_stream['time_stamps'] , 2*np.ones_like(mocap_times), linewidth=5)
-ax.plot(eeg_stream['time_stamps'] , 3*np.ones_like(eeg_times), linewidth=5)
-ax.set_yticks([1,2,3])
-ax.set_yticklabels(['EMG', 'MoCap', 'EEG'])
-ax.set_xlabel('Time (s)')
-
-# print the time diff between eeg and emg
-print(f"Time difference between EEG and EMG: {emg_stream['time_stamps'][0] - 1 - eeg_stream['time_stamps'] [0] - (1/250)} " )

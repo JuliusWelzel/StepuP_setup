@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyxdf
 
-file_path = r"C:\Users\juliu\Desktop\kiel\stepup_setup_jw\data\Test_bologna_25_03_25\4_WALKING_14\sub-P001_ses-S001_task-Default_run-001_eeg_old6.xdf"  # Replace with your XDF file path
+file_path = r"C:\Users\juliu\Desktop\kiel\stepup_setup_jw\data\test_telAviv_260325_2.xdf"  # Replace with your XDF file path
 
 
 streams, fileheader = pyxdf.load_xdf(file_path, handle_clock_resets=False)
@@ -74,7 +74,7 @@ for marker_id, info in marker_data_dict.items():
 # make 3 subplots
 fig, axs = plt.subplots(3, 1, sharex=True)
 # plot 1 emg
-axs[0].plot(emg_times, emg_raw[:,5]) 
+axs[0].plot(emg_times, emg_raw[:,0]) 
 axs[0].set_ylabel('EMG')
 axs[0].set_ylim([-100, 100])
 #axs[0].legend(['RfEmgR', 'BfEmgR', 'RfEmgL', 'BfEmgL'])
@@ -119,3 +119,5 @@ ax.set_xlabel('Time (s)')
 
 # print the time diff between eeg and emg
 print(f"Time difference between EEG and EMG: {emg_stream['time_stamps'][0] - 1 - eeg_stream['time_stamps'] [0] - (1/250)} " )
+print(f"Time difference between MoCap and EMG: {mocap_stream['time_stamps'][0] - 1 - eeg_stream['time_stamps'] [0] - (1/250)} " )
+print(f"Time difference between EEG and MoCap: {emg_stream['time_stamps'][0] - mocap_stream['time_stamps'] [0] - (1/250)} " )
