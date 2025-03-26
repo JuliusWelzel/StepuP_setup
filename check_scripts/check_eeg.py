@@ -7,8 +7,9 @@ from pathlib import Path
 
 
 
-fname = r"C:\Users\juliu\Desktop\kiel\stepup_setup_jw\data\test_sydney_110325\MaynaTestWalk01.xdf"  # Replace with your XDF file path
-streams, header = pyxdf.load_xdf(fname)
+file_path = r"C:\Users\juliu\Desktop\kiel\stepup_setup_jw\data\Test_bologna_25_03_25\4_WALKING_14\sub-P001_ses-S001_task-Default_run-001_eeg_old6.xdf"  # Replace with your XDF file path
+
+streams, header = pyxdf.load_xdf(file_path)
 
 eeg_stream = [s for s in streams if s['info']['type'][0] == 'EEG'][0]
 
