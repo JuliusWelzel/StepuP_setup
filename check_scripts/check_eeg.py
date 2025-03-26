@@ -33,7 +33,7 @@ ed_data = mne.preprocessing.compute_bridged_electrodes(raw)
 
 bridged_idx, ed_matrix = ed_data
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4), layout="constrained")
+fig, (ax1) = plt.subplots(1, 1, figsize=(8, 8), layout="constrained")
 fig.suptitle("Subject 6 Electrical Distance Matrix")
 
 # take median across epochs, only use upper triangular, lower is NaNs
@@ -47,14 +47,6 @@ im1 = ax1.imshow(ed_plot, aspect="auto")
 cax1 = fig.colorbar(im1, ax=ax1)
 cax1.set_label(r"Electrical Distance ($\mu$$V^2$)")
 
-# plot zoomed in colors
-im2 = ax2.imshow(ed_plot, aspect="auto", vmax=5)
-cax2 = fig.colorbar(im2, ax=ax2)
-cax2.set_label(r"Electrical Distance ($\mu$$V^2$)")
-for ax in (ax1, ax2):
-    ax.set_xlabel("Channel Index")
-    ax.set_ylabel("Channel Index")
-
 
 # plot psd of all channels
 fig, ax = plt.subplots()
@@ -63,16 +55,3 @@ ax.set_title("PSD of all channels")
 ax.set_ylim([80, 180])
 plt.show()
 
-# plot one random channel and one with lowest mean
-fig, axs = plt.subplots(2, 1, sharex=True)
-raw.plot( picks=[0], show=False)
-raw.plot( picks=[np.argmin(np.mean(raw._data, axis=1))], show=False)
-axs[0].set_title("PSD of random channel")
-axs[1].set_title("PSD of channel with lowest mean")
-
-# plot tf of all channels
-fig, ax = plt.subplots()
-raw.plot(duration=10, n_channels=10, scalings="auto", picks=[0], show=False)
-raw.plot(duration=10, n_channels=10, scalings="auto", picks=[np.argmin(np.mean(raw._data, axis=1))], show=False)
-ax.set_title("Time-frequency of all channels")
-plt.show()
