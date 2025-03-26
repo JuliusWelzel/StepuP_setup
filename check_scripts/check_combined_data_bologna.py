@@ -75,9 +75,9 @@ print(f"  A total of {len(unique_marker_ids)} markers is found, where .")
 # make 3 subplots
 fig, axs = plt.subplots(3, 1, sharex=True)
 # plot 1 emg
-axs[0].plot(emg_times, emg_raw[:,5]) 
+axs[0].plot(emg_times, emg_raw[:,:9]) 
 axs[0].set_ylabel('EMG')
-axs[0].set_ylim([-100, 100])
+axs[0].set_ylim([-400, 400])
 #axs[0].legend(['RfEmgR', 'BfEmgR', 'RfEmgL', 'BfEmgL'])
 
 # plot 2 mocap
@@ -98,4 +98,30 @@ axs[2].set_xlabel('Time (s)')
 
 # set xlim 20-30s for all subplots
 for ax in axs:
-    ax.set_xlim([25, 30])
+    ax.set_xlim([20, 30])
+
+
+
+# plot each emg channel in a different subplot with labels
+emg_labels = [
+    "Rectus femoris RIGHT",
+    "Rectus femoris LEFT",
+    "Biceps femoris RIGHT",
+    "Biceps femoris LEFT",
+    "Gastrocnemius medialis RIGHT",
+    "Gastrocnemius medialis LEFT",
+    "Gluteus medius RIGHT",
+    "Gluteus medius LEFT"
+]
+
+fig, axs = plt.subplots(8, 1, sharex=True)
+for i in range(8):
+    axs[i].plot(emg_times, emg_raw[:, i])
+    axs[i].set_title(emg_labels[i])
+    mean = np.mean(emg_raw[:, i])
+    std = np.std(emg_raw[:, i]) * 3
+    axs[i].set_ylim([mean - std, mean + std])
+
+# set xlim 20-30s for all subplots
+for ax in axs:
+    ax.set_xlim([20, 30])
