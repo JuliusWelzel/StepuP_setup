@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyxdf
 
-file_path = r"C:\Users\User\Desktop\kiel\stepup\stepup_setup_jw\data\sub01_telaviv.xdf"  # Replace with your XDF file path
+file_path = r"C:\Users\User\Desktop\kiel\stepup\stepup_setup_jw\data\Walking1.xdf"  # Replace with your XDF file path
 
 
 streams, fileheader = pyxdf.load_xdf(file_path, handle_clock_resets=False)

@@ -6,8 +6,7 @@ import pyxdf
 from pathlib import Path
 
 
-
-file_path = r"C:\Users\juliu\Desktop\kiel\stepup_setup_jw\data\Test_bologna_25_03_25\4_WALKING_14\sub-P001_ses-S001_task-Default_run-001_eeg_old6.xdf"  # Replace with your XDF file path
+file_path = r"C:\Users\User\Desktop\kiel\stepup\stepup_setup_jw\data\Walking1.xdf"  # Replace with your XDF file path
 
 streams, header = pyxdf.load_xdf(file_path)
 
@@ -15,14 +14,18 @@ eeg_stream = [s for s in streams if s['info']['type'][0] == 'EEG'][0]
 
 data = eeg_stream["time_series"].T
 sfreq = float(eeg_stream["info"]["nominal_srate"][0])
+
+n_channels = eeg_stream['time_series'].shape[1]
+# Example: Set your channel names and types
 montage = mne.channels.make_standard_montage("standard_1020")
-channels = eeg_stream["info"]["desc"][0]["channels"][0]["channel"]
-ch_names = [channel["label"][0] for channel in channels]
-ch_types = [channel["type"][0] for channel in channels]
+ch_names = montage.ch_names[:n_channels]  # Use the first n_channels from the montage
+ch_types = ['eeg'] * n_channels  # or mix as needed
+
 # change all labels to misc when not EEG
-ch_types = ["eeg" if ch_type == "EEG" else "misc" for ch_type in ch_types]
 info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types=ch_types)
 raw = mne.io.RawArray(data, info)
+
+raw.set_montage(montage, match_case=False)
 
 # pick only eeg channels
 raw.pick_types(eeg=True)
@@ -50,8 +53,8 @@ cax1.set_label(r"Electrical Distance ($\mu$$V^2$)")
 
 # plot psd of all channels
 fig, ax = plt.subplots()
-raw.plot_psd(ax=ax, fmax=100, show=False)
+raw.plot_psd(ax=ax, fmax=40, show=False)
 ax.set_title("PSD of all channels")
-ax.set_ylim([80, 180])
+ax.set_ylim([110, 160])
 plt.show()
 
